@@ -7,7 +7,7 @@ export default function Homepage()
         <div>
             <h1>Wallet Connect - Tests</h1>
             <WalletStatus />
-            <WalletButton />
+            <WalletButton buttonText="Loading..." />
         </div>
     );
 }
