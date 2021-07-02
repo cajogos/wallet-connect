@@ -16,6 +16,7 @@ class MetaMaskWallet
     private ready: boolean; // Wallet ready to use?
     private currentNetwork: number|null = null; // The currently connected network
     private currentAccount: string|null = null; // The selected account address
+    private connected: boolean = false;
 
     // Listeners of the Wallet
     private listeners: IMetaMaskListener[] = [];
@@ -41,6 +42,8 @@ class MetaMaskWallet
     {
         this.currentNetwork = parseInt(ethereum.networkVersion);
         this.currentAccount = ethereum.selectedAddress;
+
+        this.connected = ethereum.isConnected() && (this.currentAccount !== null);
 
         // Attach Events
         ethereum.on('accountsChanged', (accounts: Array<string>): void =>
@@ -68,6 +71,11 @@ class MetaMaskWallet
     public isReady(): boolean
     {
         return this.ready;
+    }
+
+    public isConnected(): boolean
+    {
+        return this.connected;
     }
 
     public async requestAccounts(): Promise<boolean>

@@ -10,8 +10,6 @@ type MyState = {
 
 class WalletButton extends React.Component<MyProps, MyState> implements IMetaMaskListener
 {
-    buttonText: string = 'Loading';
-
     constructor(props: any)
     {
         super(props);
@@ -25,6 +23,9 @@ class WalletButton extends React.Component<MyProps, MyState> implements IMetaMas
 
     componentDidMount()
     {
+        this.setState({
+            connected: MetaMaskWallet.getInstance().isConnected()
+        });
     }
 
     private enable()
@@ -51,16 +52,20 @@ class WalletButton extends React.Component<MyProps, MyState> implements IMetaMas
     {
         this.disable();
         const result = await MetaMaskWallet.getInstance().requestAccounts();
-        console.log('result', result);
-        this.enable();
+        if (result)
+        {
+            this.setState({
+                connected: true
+            });
+        }
     }
     
     render()
     {
         return (
             <div>
-                <button onClick={this.handleClick.bind(this)} disabled={this.state.disabled}>
-                    <span>{this.buttonText}</span>
+                <button onClick={this.handleClick.bind(this)} disabled={this.state.disabled || this.state.connected}>
+                    <span>{this.state.connected ? 'Connected' : 'Not Connected'}</span>
                 </button>
             </div>
         );
