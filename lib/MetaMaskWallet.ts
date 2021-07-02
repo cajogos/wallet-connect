@@ -43,19 +43,23 @@ class MetaMaskWallet
         this.currentAccount = ethereum.selectedAddress;
 
         // Attach Events
-        ethereum.on('accountsChanged', (accounts: string[]) =>
+        ethereum.on('accountsChanged', (accounts: Array<string>): void =>
         {
             this.handleAccountsChanged(accounts);
         });
-        ethereum.on('chainChanged', (chainID: string) =>
+        ethereum.on('chainChanged', (chainID: string): void =>
         {
             this.handleNetworkChanged(parseInt(chainID));
         });
-        ethereum.on('connect', (connectInfo) =>
+        ethereum.on('message', (message: ProviderMessage): void =>
+        {
+            console.log('received message', message);
+        });
+        ethereum.on('connect', (connectInfo: ConnectInfo) =>
         {
             console.log('ethereum connect event', connectInfo);
         });
-        ethereum.on('disconnect', (error) =>
+        ethereum.on('disconnect', (error: ProviderRpcError) =>
         {
             console.log('ethereum disconnect event', error);
         });
@@ -68,14 +72,24 @@ class MetaMaskWallet
 
     public async requestAccounts(): Promise<boolean>
     {
-        const accounts = await ethereum.request({
-            method: 'eth_requestAccounts'
+        return new Promise((resolve, reject) => {
+            ethereum.request({
+                method: 'eth_requestAccounts'
+            })
+            .then((accounts: string[]) =>
+            {
+                if (accounts.length > 0)
+                {
+                    this.currentAccount = accounts[0];
+                    resolve(true);
+                }
+                resolve(false);
+            })
+            .catch((error) =>
+            {
+                resolve(false);
+            });
         });
-        if (accounts.length > 0)
-        {
-            this.currentAccount = accounts[0];
-        }
-        return true;
     }
 
     private handleAccountsChanged(accounts: string[]): void
@@ -105,6 +119,24 @@ class MetaMaskWallet
     public getCurrentNetwork(): number
     {
         return this.currentNetwork;
+    }
+
+    public static getNetworkName(chainID: number): string
+    {
+        switch (chainID)
+        {
+            case 1:
+                return 'Ethereum Mainnet';
+            case 3:
+                return 'Ropsten Testnet';
+            case 4:
+                return 'Rinkeby Testnet';
+            case 5:
+                return 'Goerli Testnet';
+            case 42:
+                return 'Kovan Testnet';
+        }
+        return 'Unknown';
     }
 
     public getCurrentAccount(): string|null

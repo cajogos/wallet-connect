@@ -2,9 +2,7 @@ import React from "react";
 import MetaMaskWallet from "../lib/MetaMaskWallet";
 import IMetaMaskListener from "../interfaces/IMetaMaskListener";
 
-type MyProps = {
-    buttonText: string
-};
+type MyProps = {};
 type MyState = {
     connected: boolean,
     disabled: boolean
@@ -12,6 +10,8 @@ type MyState = {
 
 class WalletButton extends React.Component<MyProps, MyState> implements IMetaMaskListener
 {
+    buttonText: string = 'Loading';
+
     constructor(props: any)
     {
         super(props);
@@ -21,6 +21,10 @@ class WalletButton extends React.Component<MyProps, MyState> implements IMetaMas
         };
 
         MetaMaskWallet.getInstance().addListener(this);
+    }
+
+    componentDidMount()
+    {
     }
 
     private enable()
@@ -46,7 +50,8 @@ class WalletButton extends React.Component<MyProps, MyState> implements IMetaMas
     private async handleClick()
     {
         this.disable();
-        let accounts = await MetaMaskWallet.getInstance().requestAccounts();
+        const result = await MetaMaskWallet.getInstance().requestAccounts();
+        console.log('result', result);
         this.enable();
     }
     
@@ -55,7 +60,7 @@ class WalletButton extends React.Component<MyProps, MyState> implements IMetaMas
         return (
             <div>
                 <button onClick={this.handleClick.bind(this)} disabled={this.state.disabled}>
-                    <span>{this.props.buttonText}</span>
+                    <span>{this.buttonText}</span>
                 </button>
             </div>
         );

@@ -3,7 +3,8 @@ import IMetaMaskListener from "../interfaces/IMetaMaskListener";
 import MetaMaskWallet from "../lib/MetaMaskWallet";
 
 type MyState = {
-    connectedNetwork: string,
+    networkId: number,
+    networkName: string,
     selectedAccount: string
 };
 
@@ -12,34 +13,45 @@ class WalletStatus extends React.Component<{}, MyState> implements IMetaMaskList
     constructor(props: any)
     {
         super(props);
-
         this.state = {
-            connectedNetwork: MetaMaskWallet.getInstance().getCurrentNetwork()?.toString(),
-            selectedAccount: MetaMaskWallet.getInstance().getCurrentAccount()
+            networkId: null,
+            networkName: null,
+            selectedAccount: null
         };
 
         MetaMaskWallet.getInstance().addListener(this);
     }
 
+    componentDidMount()
+    {
+        this.refreshWalletState();
+    }
+
+    private refreshWalletState()
+    {
+        let wallet = MetaMaskWallet.getInstance();
+        this.setState({
+            networkId: wallet.getCurrentNetwork(),
+            networkName: MetaMaskWallet.getNetworkName(wallet.getCurrentNetwork()),
+            selectedAccount: wallet.getCurrentAccount()
+        });   
+    }
+
     public handleAccountChangedEvent(account: string): void
     {
-        this.setState({
-            selectedAccount: account
-        });
+        this.refreshWalletState();
     }
 
     public handleNetworkChangedEvent(network: number): void
     {
-        this.setState({
-            connectedNetwork: network.toString()
-        });
+        this.refreshWalletState();
     }
 
     render()
     {
         return (
             <div suppressHydrationWarning={true}>
-                {process.browser && <p><strong>Network: </strong>{this.state.connectedNetwork}</p>}
+                {process.browser && <p><strong>Network: </strong>{this.state.networkId} ({this.state.networkName})</p>}
                 {process.browser && <p><strong>Selected Account: </strong>{this.state.selectedAccount}</p>}
             </div>
         );
